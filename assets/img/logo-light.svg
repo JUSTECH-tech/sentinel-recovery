@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 268 48" role="img" aria-label="Sentinel Recovery">
+  <g fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 4 40 10.4v11.8c0 10.2-6.8 17.4-16 21.2-9.2-3.8-16-11-16-21.2V10.4L24 4Z"/>
+    <path d="m16.8 22.4 4.8 4.8 9.2-10.2"/>
+  </g>
+  <text x="52" y="22.5" font-family="Manrope, Segoe UI, Arial, sans-serif" font-size="17.5" font-weight="800" letter-spacing="1.7" fill="#ffffff">SENTINEL</text>
+  <text x="52.5" y="38.5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="9.5" font-weight="600" letter-spacing="4.4" fill="#5eead4">RECOVERY</text>
+</svg>
