@@ -74,7 +74,13 @@ To stop it, press `Ctrl + C` in PowerShell.
 
 GitHub Pages cannot run the office system. It only shows the website.
 
-You need to host the `backend` folder somewhere that supports Node.js. After it is hosted, you will get a URL like:
+I already prepared the Render setup for you. Follow this guide, click by click:
+
+```text
+DEPLOY-RENDER.md
+```
+
+After it is hosted, you will get a URL like:
 
 ```text
 https://sentinel-recovery-api.up.railway.app

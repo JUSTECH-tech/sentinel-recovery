@@ -1,0 +1,63 @@
+# Render Blueprint for the Sentinel Recovery intake API.
+# Create a free Render account, connect this GitHub repo, and choose "New Blueprint".
+# This deploys only the backend folder. The public website stays on GitHub Pages.
+
+services:
+  - type: web
+    name: sentinel-recovery-api
+    runtime: node
+    region: oregon
+    plan: 0.5c-512mb
+    branch: main
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+
+    # Persistent disk for SQLite + evidence uploads.
+    disk:
+      name: sentinel-data
+      mountPath: /data
+      sizeGB: 5
+
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+
+      - key: DATA_DIR
+        value: /data
+
+      # Render sets PORT automatically. Keeping this here documents the default.
+      - key: PORT
+        value: "10000"
+
+      - key: HOST
+        value: 0.0.0.0
+
+      # Change this to the live URL Render shows you if the service name differs.
+      - key: BASE_URL
+        value: https://sentinel-recovery-api.onrender.com
+
+      # Add your real/custom site domain here when you have one.
+      - key: ALLOWED_ORIGINS
+        value: https://justech-tech.github.io,https://www.sentineltrecovery.com,https://sentineltrecovery.com
+
+      # Admin alert recipient. Not published on the public website.
+      - key: NOTIFICATION_EMAIL
+        value: alyshiakelly6@gmail.com
+
+      # You will be asked for this when creating the Blueprint.
+      # Choose a long password you do not use anywhere else.
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # Optional. Leave blank until you have a Resend API key.
+      - key: RESEND_API_KEY
+        sync: false
+
+      - key: EMAIL_FROM
+        value: Sentinel Recovery <onboarding@resend.dev>
+
+      - key: IP_SALT
+        generateValue: true

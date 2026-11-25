@@ -43,7 +43,7 @@ const MAX_FILES = 8;
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 const SESSION_MS = 8 * 60 * 60 * 1000;
 
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data');
 const EVIDENCE_DIR = path.join(DATA_DIR, 'evidence');
 fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
 

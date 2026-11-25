@@ -88,9 +88,9 @@ Resend's `onboarding@resend.dev` sender only works while testing and only to you
 
 GitHub Pages cannot run Node.js. Host this folder on a service with persistent storage and a public HTTPS URL, for example:
 
-- **Railway** — add a persistent volume mounted at `/app/data`, set the env vars, deploy from this folder.
-- **Render** — Web Service, Node runtime, persistent disk for `data/`.
-- **Fly.io** — small VM plus a volume.
+- **Render (easiest)** — a `render.yaml` Blueprint is already in the repo root. It creates a Node web service with a 5 GB persistent disk mounted at `/data`, sets `DATA_DIR=/data`, and asks you for `ADMIN_PASSWORD`. See `DEPLOY-RENDER.md` in the repo root.
+- **Railway** — add a persistent volume mounted at `/data`, set `DATA_DIR=/data`, set the env vars, deploy from this folder.
+- **Fly.io** — small VM plus a volume mounted at `/data`, with `DATA_DIR=/data`.
 - **A VPS** — run behind Caddy or Nginx with automatic HTTPS.
 
 After deployment, update `.env`:
