@@ -72,7 +72,7 @@ Then visit `http://localhost:8080`.
 Almost everything you need to change lives in **`assets/js/config.js`**.
 
 ```js
-window.SENTINEL_CONFIG = {
+var cfg = {
   brand: "Sentinel Recovery",
   legalName: "Sentinel Recovery Ltd.",
   email: "hello@sentineltrecovery.com",
@@ -83,10 +83,16 @@ window.SENTINEL_CONFIG = {
   hours: "Mon–Fri, 8:00am–8:00pm ET · Sat, 9:00am–2:00pm ET",
   responseTime: "one business day",
   registration: "",          // e.g. "Company no. 12345678" — hidden when empty
-  formEndpoint: "",          // optional POST endpoint for reports
-  contactEndpoint: "",       // optional POST endpoint for contact messages
+  apiBase: "",               // e.g. "https://api.yourdomain.com" — empty keeps email fallback
   social: { linkedin: "", x: "" }
 };
+```
+
+`apiBase` automatically produces `formEndpoint`, `contactEndpoint` and
+`statusEndpoint`. A per-browser override is also available from the console:
+
+```js
+localStorage.setItem("sentinel_api_base", "https://api.yourdomain.com");
 ```
 
 Values are applied across the site automatically through `data-*` attributes
@@ -124,20 +130,21 @@ The visitor gets a success panel with their case reference, a download button, a
 `mailto:` link to send the report to `casesEmail`. This is intentional — it avoids
 pretending a report was received when it was not.
 
-**With a backend:** set `formEndpoint` in `config.js` to a URL that accepts a `POST`
-of `FormData`. The wizard will then submit via `fetch()`, use the returned `caseId`
-when present, and show the "received" state. If the request fails, it falls back to the
-email/download flow rather than losing the report.
+**With a backend:** set `apiBase` in `config.js` to the intake API URL. The wizard then
+POSTs `FormData` to `/api/reports`, uses the **server-generated** `caseId` from the
+response, and shows the "received" state. If the request fails, it falls back to the
+email/download flow rather than losing the report. See `backend/README.md`.
 
 ### Contact and case-status forms
 
 `contact.html` and `case-status.html` use the same pattern:
 
-- Set `contactEndpoint` to POST to your backend, or
+- Set `apiBase` to POST to the intake API, or
 - leave it empty to use the `mailto:` fallback.
 
 The case-status form never displays case details on the page — it is a request form only.
-Keep it that way unless you build proper authenticated case tracking.
+The API records the request and flags whether the reference/email pair matched, but
+returns no case data. Keep it that way unless you build proper authenticated case tracking.
 
 ### File uploads
 
@@ -148,7 +155,29 @@ files are included in the `FormData` payload.
 
 ---
 
-## 5. Deploying
+## 5. Intake API (backend)
+
+The `backend/` folder contains a zero-dependency Node.js service that makes the forms
+operational. It stores reports and evidence, assigns case references server-side,
+protects the admin area with an HttpOnly cookie, and can send email through Resend.
+
+```powershell
+cd backend
+Copy-Item .env.example .env
+notepad .env          # set ADMIN_PASSWORD and NOTIFICATION_EMAIL
+npm start
+```
+
+Then open `http://localhost:8787/admin` and set `apiBase` in `assets/js/config.js` to
+`http://localhost:8787` for local testing. Full setup, hosting and API details are in
+**`backend/README.md`**.
+
+GitHub Pages cannot run this API. Host `backend/` on Railway, Render, Fly.io or a VPS
+with persistent storage and HTTPS, then point `apiBase` at its public URL.
+
+---
+
+## 6. Deploying
 
 The site is fully static. It works on any of:
 
@@ -199,7 +228,7 @@ save as PDF.
 
 ---
 
-## 6. Customising the design
+## 7. Customising the design
 
 The visual system is driven by CSS custom properties at the top of
 `assets/css/styles.css`:
@@ -223,7 +252,7 @@ The mobile menu, scroll reveals and FAQ accordions are handled in `main.js`.
 
 ---
 
-## 7. Accessibility and performance
+## 8. Accessibility and performance
 
 - Semantic landmarks (`header`, `nav`, `main`, `footer`), skip link, and visible focus states.
 - Forms use real `<label>` elements, error text and `aria-live` status regions.
@@ -234,7 +263,7 @@ The mobile menu, scroll reveals and FAQ accordions are handled in `main.js`.
 
 ---
 
-## 8. Before you publish — legal and compliance checklist
+## 9. Before you publish — legal and compliance checklist
 
 This site is a **template**. The legal pages are realistic starting points, not legal advice.
 
@@ -252,7 +281,7 @@ This site is a **template**. The legal pages are realistic starting points, not 
 
 ---
 
-## 9. Browser support
+## 10. Browser support
 
 Current versions of Chrome, Edge, Firefox and Safari, plus modern mobile browsers.
 The site degrades gracefully without JavaScript: content is visible, links work, and the
@@ -260,7 +289,7 @@ FAQ still functions. The report wizard requires JavaScript.
 
 ---
 
-## 10. License / attribution
+## 11. License / attribution
 
 All copy, layout and graphics in this project were created for Sentinel Recovery.
 Replace the placeholder brand assets (`assets/img/logo*.svg`, icons, `og-image.png`)

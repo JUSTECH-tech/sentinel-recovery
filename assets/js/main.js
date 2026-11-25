@@ -21,6 +21,15 @@
     return value === undefined || value === null || value === "" ? (fallback || "") : value;
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function mailto(address, subject, body) {
     return "mailto:" + address +
       "?subject=" + encodeURIComponent(subject) +
@@ -290,6 +299,8 @@
       var caseId = String(data.get("caseId") || "").trim().toUpperCase();
       var email = String(data.get("email") || "").trim();
       var address = text(cfg.casesEmail, text(cfg.email, "cases@sentineltrecovery.com"));
+      var button = $('button[type="submit"]', form);
+      var result = $("[data-status-result]", form.parentNode) || $("[data-status-result]");
 
       var body =
         "Case reference: " + caseId + "\n" +
@@ -297,16 +308,49 @@
         "Please send me a status update on my case.\n\n" +
         "— Sent from the Sentinel Recovery website";
 
-      var result = $("[data-status-result]", form.parentNode) || $("[data-status-result]");
-      if (result) {
+      var target = mailto(address, "Case status request — " + caseId, body);
+
+      function showReady() {
+        if (!result) { return; }
         result.hidden = false;
         result.innerHTML =
           "<h3>Request ready to send</h3>" +
-          "<p>For your security, case updates are only sent to the email address on file. Your email app should open with a request for <strong>" + caseId + "</strong>.</p>" +
-          "<p><a class=\"link-arrow\" href=\"" + mailto(address, "Case status request — " + caseId, body) + "\">Open the email request again</a></p>";
+          "<p>For your security, case updates are only sent to the email address on file. Your email app should open with a request for <strong>" + escapeHtml(caseId) + "</strong>.</p>" +
+          "<p><a class=\"link-arrow\" href=\"" + target + "\">Open the email request again</a></p>";
       }
 
-      window.location.href = mailto(address, "Case status request — " + caseId, body);
+      if (button) { button.disabled = true; }
+
+      if (cfg.statusEndpoint) {
+        fetch(cfg.statusEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ caseId: caseId, email: email })
+        }).then(function (response) {
+          return response.json().catch(function () { return {}; }).then(function (payload) {
+            if (!response.ok) { throw new Error("Request failed"); }
+            return payload;
+          });
+        }).then(function () {
+          if (result) {
+            result.hidden = false;
+            result.innerHTML =
+              "<h3>Request received</h3>" +
+              "<p>Thanks. We have recorded your request for <strong>" + escapeHtml(caseId) + "</strong>. Case updates are only sent to the email address on file, so please check the inbox you used.</p>" +
+              "<p>If the reference and email address match our records, a team member will respond. We will never ask you for passwords, one-time codes or payments.</p>";
+          }
+          form.reset();
+        }).catch(function () {
+          showReady();
+          window.location.href = target;
+        }).then(function () {
+          if (button) { button.disabled = false; }
+        });
+      } else {
+        showReady();
+        window.location.href = target;
+        if (button) { button.disabled = false; }
+      }
     });
   }
 

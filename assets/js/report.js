@@ -580,17 +580,23 @@
 
       fetch(cfg.formEndpoint, { method: "POST", body: payload })
         .then(function (response) {
-          if (!response.ok) { throw new Error("Submission failed"); }
-          return response.json().catch(function () { return {}; });
+          return response.json().catch(function () { return {}; }).then(function (result) {
+            if (!response.ok) {
+              var message = result.error || (result.errors && result.errors.join(" ")) || "Submission failed";
+              throw new Error(message);
+            }
+            return result;
+          });
         })
         .then(function (result) {
           clearDraft();
           showSuccess(result.caseId || caseId, data, true);
         })
-        .catch(function () {
+        .catch(function (error) {
           if (els.errorBox) {
             els.errorBox.hidden = false;
-            els.errorBox.textContent = "We could not submit automatically, but your report is ready to send by email. Nothing has been lost.";
+            var reason = error && error.message ? " (" + error.message + ")" : "";
+            els.errorBox.textContent = "We could not submit automatically" + reason + ". Your report is ready to send by email. Nothing has been lost.";
           }
           clearDraft();
           showSuccess(caseId, data, false);
